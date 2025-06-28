@@ -2,24 +2,44 @@ package ru.netology.repository;
 
 import ru.netology.model.Post;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 // Stub
 public class PostRepository {
-  public List<Post> all() {
-    return Collections.emptyList();
-  }
+    private final ConcurrentHashMap<Long, Post> posts = new ConcurrentHashMap<>();
+    private final AtomicLong idGenerator = new AtomicLong(1);
 
-  public Optional<Post> getById(long id) {
-    return Optional.empty();
-  }
+    public List<Post> all() {
+        return new ArrayList<>(posts.values());
+    }
 
-  public Post save(Post post) {
-    return post;
-  }
+    public Optional<Post> getById(long id) {
+        return Optional.ofNullable(posts.get(id));
+    }
 
-  public void removeById(long id) {
-  }
+    public Post save(Post post) {
+        if (post.getId() == 0) {
+            long newId = idGenerator.getAndIncrement();
+            Post newPost = new Post(newId, post.getContent());
+            posts.put(newId, newPost);
+            return newPost;
+        } else {
+            return posts.compute(post.getId(), (id, existingPost) -> {
+                if (existingPost == null) {
+                    return new Post(post.getId(), post.getContent());
+                } else {
+                    existingPost.setContent(post.getContent());
+                    return existingPost;
+                }
+            });
+        }
+    }
+
+    public void removeById(long id) {
+        posts.remove(id);
+    }
 }
