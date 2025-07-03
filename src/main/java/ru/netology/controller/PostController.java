@@ -1,6 +1,7 @@
 package ru.netology.controller;
 
 import com.google.gson.Gson;
+import org.springframework.beans.factory.annotation.Autowired;
 import ru.netology.model.Post;
 import ru.netology.service.PostService;
 
@@ -16,6 +17,7 @@ public class PostController {
     private static final String MSG_NOT_FOUND = "Post not found";
     private static final String MSG_SERVER_ERROR = "Internal server error";
 
+    @Autowired
     public PostController(PostService service) {
         this.service = service;
     }
